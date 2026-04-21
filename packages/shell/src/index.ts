@@ -25,6 +25,13 @@ export {
   type FileSystemStateBackendOptions
 } from "./memory";
 export { createWorkspaceStateBackend, WorkspaceFileSystem } from "./workspace";
+export {
+  FileSystemStorage,
+  VersionedFileSystem,
+  type FileSystemStorageOptions,
+  type VersionedFileSystemChangeEvent,
+  type VersionedFileSystemChangeType
+} from "./versioned-filesystem";
 
 // ── LLM prompt helpers ────────────────────────────────────────────────
 export { STATE_TYPES, STATE_SYSTEM_PROMPT } from "./prompt";
