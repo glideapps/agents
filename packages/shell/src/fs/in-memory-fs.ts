@@ -21,6 +21,7 @@ import {
   DEFAULT_DIR_MODE,
   DEFAULT_FILE_MODE,
   MAX_SYMLINK_DEPTH,
+  dirname,
   normalizePath,
   resolvePath,
   SYMLINK_MODE,
@@ -79,6 +80,11 @@ const utf8 = new TextEncoder();
 
 function split(normalized: string): string[] {
   return normalized === "/" ? [] : normalized.slice(1).split("/");
+}
+
+function segsBaseName(normalized: string): string {
+  const segs = split(normalized);
+  return segs[segs.length - 1] ?? "";
 }
 
 function freshDir(): VDirNode {
@@ -415,6 +421,14 @@ export class InMemoryFs implements FileSystem {
   }
 
   async mv(src: string, dest: string): Promise<void> {
+    validatePath(src, "mv");
+    validatePath(dest, "mv");
+    const srcNorm = normalizePath(src);
+    const destNorm = normalizePath(dest);
+    if (srcNorm === destNorm) return;
+    if (destNorm.startsWith(`${srcNorm}/`)) {
+      throw new Error(`EINVAL: invalid argument, mv '${src}'`);
+    }
     await this.cp(src, dest, { recursive: true });
     await this.rm(src, { recursive: true });
   }
@@ -625,7 +639,7 @@ export class InMemoryFs implements FileSystem {
     mtime?: Date
   ): void {
     validatePath(rawPath, "write");
-    const segs = split(normalizePath(rawPath));
+    const segs = split(this.resolveWritePath(rawPath));
     if (segs.length === 0) {
       throw new Error(
         `EISDIR: illegal operation on a directory, write '${rawPath}'`
@@ -677,6 +691,10 @@ export class InMemoryFs implements FileSystem {
       const child = dir.children.get(segs[i]);
       if (child && child.kind === "dir") {
         dir = child;
+      } else if (child) {
+        throw new Error(
+          `ENOTDIR: not a directory, open '/${segs.slice(0, i + 1).join("/")}'`
+        );
       } else {
         const d = freshDir();
         dir.children.set(segs[i], d);
@@ -695,6 +713,41 @@ export class InMemoryFs implements FileSystem {
     }
     const parent = this.scaffold(segs);
     parent.children.set(segs[segs.length - 1], node);
+  }
+
+  private resolveWritePath(rawPath: string): string {
+    const norm = normalizePath(rawPath);
+    if (norm === "/") {
+      return norm;
+    }
+
+    const current = this.locate(rawPath, false, "write");
+    if (current?.node.kind === "symlink") {
+      const canonical = this.canonicalize(rawPath);
+      if (canonical === null) {
+        throw this.missing("write", rawPath);
+      }
+      return canonical;
+    }
+
+    const parentPath = dirname(norm);
+    if (parentPath === "/") {
+      return norm;
+    }
+
+    const parent = this.locate(parentPath, true, "write");
+    if (!parent) {
+      return norm;
+    }
+    if (parent.node.kind !== "dir") {
+      throw new Error(`ENOTDIR: not a directory, open '${rawPath}'`);
+    }
+
+    const canonicalParent = this.canonicalize(parentPath);
+    if (canonicalParent === null || canonicalParent === "/") {
+      return `/${segsBaseName(norm)}`;
+    }
+    return `${canonicalParent}/${segsBaseName(norm)}`;
   }
 
   private deepClone(node: VNode): VNode {
