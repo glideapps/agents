@@ -15,6 +15,11 @@ export {
 // ── FileSystem interface + InMemoryFs ─────────────────────────────────
 export { InMemoryFs } from "./fs/in-memory-fs";
 export type { FileSystem, FsStat, InitialFiles } from "./fs/interface";
+export {
+  GitFileSystem,
+  type GitFileSystemOptions,
+  type GitIdentity
+} from "./git-fs/git-file-system";
 
 // ── StateBackend adapter ──────────────────────────────────────────────
 export type { StateBackend } from "./backend";
