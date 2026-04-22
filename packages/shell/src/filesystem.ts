@@ -368,7 +368,7 @@ export class Workspace {
     const resolved = r.target.startsWith("/")
       ? normalizePath(r.target)
       : normalizePath(getParent(path) + "/" + r.target);
-    return this.resolveSymlink(resolved, depth + 1);
+    return await this.resolveSymlink(resolved, depth + 1);
   }
 
   // ── Symlink API ───────────────────────────────────────────────

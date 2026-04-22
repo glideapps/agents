@@ -398,6 +398,16 @@ describe("VersionedFileSystem — symlinks", () => {
     await expectAgentError(agent, "stat", ["main", "/dangling.txt"], /ENOENT/);
   });
 
+  it("reports ELOOP for symlink cycles", async () => {
+    const agent = await freshAgent("symlinks-loop");
+
+    await expect(agent.loopErrorProbe()).resolves.toEqual({
+      read: expect.stringMatching(/ELOOP/),
+      stat: expect.stringMatching(/ELOOP/),
+      realpath: expect.stringMatching(/ELOOP/)
+    });
+  });
+
   it("writes through symlinks for text and bytes", async () => {
     const agent = await freshAgent("symlinks-write-through");
 

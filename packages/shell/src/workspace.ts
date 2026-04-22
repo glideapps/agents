@@ -147,7 +147,7 @@ export class WorkspaceFileSystem implements FileSystem {
     const resolved = target.startsWith("/")
       ? normalizePath(target)
       : normalizePath(`${dirname(path)}/${target}`);
-    return this.realpath(resolved, _depth + 1);
+    return await this.realpath(resolved, _depth + 1);
   }
 
   resolvePath(base: string, path: string): string {

@@ -827,7 +827,7 @@ export class VersionedFileSystem implements FileSystem {
     if (row.type !== "symlink") {
       return normalized;
     }
-    return this.resolveSymlink(normalized);
+    return await this.resolveSymlink(normalized);
   }
 
   resolvePath(base: string, path: string): string {
@@ -942,7 +942,7 @@ export class VersionedFileSystem implements FileSystem {
     const resolved = row.target.startsWith("/")
       ? normalizePath(row.target)
       : normalizePath(`${getParent(path)}/${row.target}`);
-    return this.resolveSymlink(resolved, depth + 1);
+    return await this.resolveSymlink(resolved, depth + 1);
   }
 
   private async ensureParentDir(dirPath: string): Promise<void> {
