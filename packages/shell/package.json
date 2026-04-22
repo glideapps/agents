@@ -38,6 +38,7 @@
   },
   "scripts": {
     "build": "tsx ./scripts/build.ts",
+    "benchmark:fs": "tsx ./scripts/benchmark-fs.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

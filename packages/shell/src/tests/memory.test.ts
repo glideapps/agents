@@ -822,6 +822,60 @@ describe("InMemoryFs — root path guards", () => {
   });
 });
 
+describe("InMemoryFs — regressions", () => {
+  it("writeFile through symlink modifies the target", async () => {
+    const fs = new InMemoryFs({ "/real.txt": "before" });
+    await fs.symlink("/real.txt", "/link.txt");
+
+    await fs.writeFile("/link.txt", "after");
+
+    await expect(fs.readFile("/real.txt")).resolves.toBe("after");
+    await expect(fs.readFile("/link.txt")).resolves.toBe("after");
+    await expect(fs.readlink("/link.txt")).resolves.toBe("/real.txt");
+  });
+
+  it("writeFileBytes through symlink modifies the target", async () => {
+    const fs = new InMemoryFs();
+    await fs.writeFileBytes("/real.bin", new Uint8Array([1, 2]));
+    await fs.symlink("/real.bin", "/link.bin");
+
+    await fs.writeFileBytes("/link.bin", new Uint8Array([3, 4, 5]));
+
+    await expect(fs.readFileBytes("/real.bin")).resolves.toEqual(
+      new Uint8Array([3, 4, 5])
+    );
+    await expect(fs.readFileBytes("/link.bin")).resolves.toEqual(
+      new Uint8Array([3, 4, 5])
+    );
+  });
+
+  it("mv to the same path is a no-op", async () => {
+    const fs = new InMemoryFs({ "/same.txt": "x" });
+
+    await fs.mv("/same.txt", "/same.txt");
+
+    await expect(fs.readFile("/same.txt")).resolves.toBe("x");
+  });
+
+  it("rejects moving a directory into its own descendant", async () => {
+    const fs = new InMemoryFs({ "/src/file.txt": "x" });
+
+    await expect(fs.mv("/src", "/src/nested/dest")).rejects.toThrow("EINVAL");
+    await expect(fs.readFile("/src/file.txt")).resolves.toBe("x");
+    await expect(fs.exists("/src/nested/dest")).resolves.toBe(false);
+  });
+
+  it("does not overwrite an intermediate file when writing a nested path", async () => {
+    const fs = new InMemoryFs({ "/leaf": "x" });
+
+    await expect(fs.writeFile("/leaf/child.txt", "y")).rejects.toThrow(
+      "ENOTDIR"
+    );
+    await expect(fs.readFile("/leaf")).resolves.toBe("x");
+    await expect(fs.exists("/leaf/child.txt")).resolves.toBe(false);
+  });
+});
+
 class FailingWriteFs {
   constructor(
     private readonly inner: InMemoryFs,
