@@ -11,6 +11,7 @@ import {
   type SqlParam,
   type WorkspaceChangeEvent
 } from "../../filesystem";
+import { WorkspaceFileSystem } from "../../workspace";
 
 export class TestWorkspaceAgent extends Agent {
   workspace = new Workspace({
@@ -129,6 +130,31 @@ export class TestWorkspaceAgent extends Agent {
 
   async lstatCall(path: string): Promise<FileStat | null> {
     return this.workspace.lstat(path);
+  }
+
+  async loopErrorProbe(): Promise<{
+    read: string;
+    stat: string;
+    realpath: string;
+  }> {
+    await this.workspace.symlink("/loop2", "/loop1");
+    await this.workspace.symlink("/loop1", "/loop2");
+
+    const fs = new WorkspaceFileSystem(this.workspace);
+    const capture = async (fn: () => Promise<unknown>): Promise<string> => {
+      try {
+        await fn();
+        return "";
+      } catch (e) {
+        return (e as Error).message;
+      }
+    };
+
+    return {
+      read: await capture(() => fs.readFile("/loop1")),
+      stat: await capture(() => fs.stat("/loop1")),
+      realpath: await capture(() => fs.realpath("/loop1"))
+    };
   }
 
   async readStream(path: string): Promise<string | null> {

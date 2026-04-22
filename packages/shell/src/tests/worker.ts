@@ -1,12 +1,14 @@
 import { getAgentByName, routeAgentRequest } from "agents";
 import { TestWorkspaceAgent } from "./agents/workspace";
 import { TestGitAgent } from "./agents/git";
+import { TestVersionedFileSystemAgent } from "./agents/versioned-filesystem";
 
-export { TestWorkspaceAgent, TestGitAgent };
+export { TestWorkspaceAgent, TestGitAgent, TestVersionedFileSystemAgent };
 
 export interface Env {
   TestWorkspaceAgent: DurableObjectNamespace;
   TestGitAgent: DurableObjectNamespace;
+  TestVersionedFileSystemAgent: DurableObjectNamespace;
   LOADER: unknown;
 }
 

@@ -1005,6 +1005,15 @@ describe("workspace — symlinks", () => {
     expect((result as { error: string }).error).toContain("EINVAL");
   });
 
+  it("reports ELOOP for symlink cycles", async () => {
+    const agent = await freshAgent("sym-loop");
+    await expect(agent.loopErrorProbe()).resolves.toEqual({
+      read: expect.stringMatching(/ELOOP/),
+      stat: expect.stringMatching(/ELOOP/),
+      realpath: expect.stringMatching(/ELOOP/)
+    });
+  });
+
   it("symlink to existing path throws EEXIST", async () => {
     const agent = await freshAgent("sym-eexist");
     await agent.write("/a.txt", "a");

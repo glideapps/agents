@@ -23,6 +23,10 @@
       {
         "class_name": "TestGitAgent",
         "name": "TestGitAgent"
+      },
+      {
+        "class_name": "TestVersionedFileSystemAgent",
+        "name": "TestVersionedFileSystemAgent"
       }
     ]
   },
@@ -34,6 +38,10 @@
     {
       "new_sqlite_classes": ["TestGitAgent"],
       "tag": "v2"
+    },
+    {
+      "new_sqlite_classes": ["TestVersionedFileSystemAgent"],
+      "tag": "v3"
     }
   ],
   "main": "src/tests/worker.ts"
