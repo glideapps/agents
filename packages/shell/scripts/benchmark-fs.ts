@@ -504,6 +504,7 @@ function createBenchmarkTarget(
         storage,
         dir: "/inner",
         gitdir: "/inner/.git",
+        branchRef: "refs/heads/inner-main",
         identity
       });
       return {
@@ -511,6 +512,7 @@ function createBenchmarkTarget(
           storage: inner,
           dir: "/outer",
           gitdir: "/outer/.git",
+          branchRef: "refs/heads/outer-main",
           identity
         }),
         storage
