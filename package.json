@@ -54,7 +54,7 @@
     "@vitest/runner": "^4.1.4",
     "ai": "^6.0.168",
     "autoevals": "^0.0.132",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "evalite": "^0.19.0",
     "fast-glob": "^3.3.3",
     "husky": "^9.1.7",
