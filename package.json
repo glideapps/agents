@@ -73,7 +73,7 @@
     "tsdown": "^0.21.9",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
-    "vite": "^8.0.9",
+    "vite": "^8.0.16",
     "vitest": "4.1.4",
     "vitest-browser-react": "^2.2.0",
     "workers-ai-provider": "^3.1.11",
